@@ -139,14 +139,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(ETIQUETA_LOG, " txPower  = " + Integer.toHexString(tib.getTxPower()) + " ( " + tib.getTxPower() + " )");
         Log.d(ETIQUETA_LOG, " ******************");
 
-        //Mostramos los valores en los textviews
-        major_text.setText((int) datos_major);
-        minor_text.setText(datos_minor);
-
-        //Almacenamos los datos de los sensores
-        datos_major = (Utilidades.bytesToInt(tib.getMajor()));
-        datos_minor = (Utilidades.bytesToInt(tib.getMinor()));
-
 
     } // ()
 
