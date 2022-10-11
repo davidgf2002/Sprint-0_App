@@ -15,7 +15,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -34,20 +33,27 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 public class MainActivity extends AppCompatActivity {
+
     private static final String ETIQUETA_LOG= ">>>>";
     private static final int CODIGO_PETICION_PERMISOS = 11223344;
 
     private BluetoothLeScanner elEscanner;
     private ScanCallback callbackDelEscaneo = null;
 
-    private TextView elTexto;
+    //TextViews donde se muestran el valor de los sensores
+    private TextView major_text;
+    private TextView minor_text;
+
+    //Datos que recoge el sensor
+    private float datos_major;
+    private int datos_minor;
+
     private Button elBotonEnviar;
 
     @SuppressLint("MissingPermission")
@@ -132,6 +138,15 @@ public class MainActivity extends AppCompatActivity {
                 + Utilidades.bytesToInt(tib.getMinor()) + " ) ");
         Log.d(ETIQUETA_LOG, " txPower  = " + Integer.toHexString(tib.getTxPower()) + " ( " + tib.getTxPower() + " )");
         Log.d(ETIQUETA_LOG, " ******************");
+
+        //Mostramos los valores en los textviews
+        major_text.setText((int) datos_major);
+        minor_text.setText(datos_minor);
+
+        //Almacenamos los datos de los sensores
+        datos_major = (Utilidades.bytesToInt(tib.getMajor()));
+        datos_minor = (Utilidades.bytesToInt(tib.getMinor()));
+
 
     } // ()
 
@@ -269,9 +284,8 @@ public class MainActivity extends AppCompatActivity {
         AndroidNetworking.initialize(getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
 
-
-        this.elTexto = (TextView) findViewById(R.id.elTexto);
         this.elBotonEnviar = (Button) findViewById(R.id.btnEnviar);
         inicializarBlueTooth();
 
@@ -280,27 +294,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+    //Recibe el valor de la medida y nombreSensor del beacon
+    //Resto de valores (fecha, coordenadas) se crean dentro de la función
+    public Medida crearMedida(float valorMedida, String nombreSensor){
+        Log.d("funcionCrearMedida()", "comienza funcion crearMedida()");
+
+
+        Medida medida = new Medida();
+
+        //Añadir valor a la medida
+        medida.setValorMedida(valorMedida);
+
+        //Añadir fecha a la medida
+        long milisegundos = System.currentTimeMillis();
+        Date fecha = new Date(milisegundos);
+
+        //Convertir fecha a string por el diseño de la clase
+        medida.setFechaMedida(fecha.toString());
+
+        //Añadir nombreSensor a la medida
+        medida.setNombreSensor(nombreSensor);
+
+        //Añadir coordenada a la medida (Longitud y latitud)
+        Coordenada coordenada = new Coordenada(1, 2);
+        medida.setCoordenada(coordenada);
+        //*************Añadir longitud y latitud reales*************//
+
+        Log.d("funcionCrearMedida()", "termina funcion crearMedida()");
+        return medida;
+    }
     //-------------------------------------------------------------------------
     //-------------------------------------------------------------------------
-    public void boton_enviar_pulsado(View quien) {
-        DecimalFormat formatoMedidas = new DecimalFormat("#.00");
+    public void boton_enviar_servidorFake(View quien) {
 
-        float medida = (float) (Math.random()*10.0);
-        float latitud = (float) (Math.random()*100.0);
-        float longitud = (float) (Math.random()*100.0);
-
-        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
-        Date fecha = new Date(System.currentTimeMillis());
+        //Se crea una medida con valor 22 y procedente del SensorOzono
+        Medida medida = crearMedida(22, "SensorOzono");
 
 
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("id", null);
-            jsonObject.put("medida", formatoMedidas.format(medida));
-            jsonObject.put("fecha", fecha);
-            jsonObject.put("nombreSensor", "SensorOzono");
-            jsonObject.put("latitud", formatoMedidas.format(latitud));
-            jsonObject.put("longitud", formatoMedidas.format(longitud));
+            jsonObject.put("medida", medida.getValorMedida());
+            jsonObject.put("fecha", medida.getFechaMedida());
+            jsonObject.put("nombreSensor", medida.getNombreSensor());
+            jsonObject.put("latitud", medida.getCoordenada().getLatitud());
+            jsonObject.put("longitud", medida.getCoordenada().getLongitud());
 
 
         } catch (JSONException e) {
