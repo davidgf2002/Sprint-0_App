@@ -32,7 +32,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -54,7 +53,9 @@ public class MainActivity extends AppCompatActivity {
     private float datos_major;
     private int datos_minor;
 
+    private Button elBotonEnviarFake;
     private Button elBotonEnviar;
+
 
     @SuppressLint("MissingPermission")
     private void buscarTodosLosDispositivosBTLE() {
@@ -138,6 +139,15 @@ public class MainActivity extends AppCompatActivity {
                 + Utilidades.bytesToInt(tib.getMinor()) + " ) ");
         Log.d(ETIQUETA_LOG, " txPower  = " + Integer.toHexString(tib.getTxPower()) + " ( " + tib.getTxPower() + " )");
         Log.d(ETIQUETA_LOG, " ******************");
+
+
+        //Recogemos los datos de major y minor
+        datos_major = (Utilidades.bytesToInt(tib.getMajor()));
+        datos_minor = (Utilidades.bytesToInt(tib.getMinor()));
+
+        //Mostramos los datos en los textviews
+        //major_text.setText((int) datos_major);
+        //minor_text.setText(datos_minor);
 
 
     } // ()
@@ -276,9 +286,16 @@ public class MainActivity extends AppCompatActivity {
         AndroidNetworking.initialize(getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
 
-        this.elBotonEnviar = (Button) findViewById(R.id.btnEnviar);
+        //Botones para enviar los datos
+        this.elBotonEnviarFake = (Button) findViewById(R.id.btnEnviarFake);
+        this.elBotonEnviar = (Button) findViewById(R.id.botonEnviarServ);
+
+        //Textos para mostrar los datos
+        major_text = findViewById(R.id.major_text);
+        minor_text = findViewById(R.id.minor_text);
+
+
         inicializarBlueTooth();
 
 
@@ -289,7 +306,11 @@ public class MainActivity extends AppCompatActivity {
 
     //Recibe el valor de la medida y nombreSensor del beacon
     //Resto de valores (fecha, coordenadas) se crean dentro de la función
-    public Medida crearMedida(float valorMedida, String nombreSensor){
+
+    // float, int ->
+    //    crearMedida() ->
+    // Medida
+    public Medida crearMedida(float valorMedida, int nombreSensor){
         Log.d("funcionCrearMedida()", "comienza funcion crearMedida()");
 
 
@@ -306,7 +327,13 @@ public class MainActivity extends AppCompatActivity {
         medida.setFechaMedida(fecha.toString());
 
         //Añadir nombreSensor a la medida
-        medida.setNombreSensor(nombreSensor);
+        String nombre_Sensor;
+        if(nombreSensor == 1){
+            nombre_Sensor = "Test";
+        } else{
+            nombre_Sensor = "SensorOzono";
+        }
+        medida.setNombreSensor(nombre_Sensor);
 
         //Añadir coordenada a la medida (Longitud y latitud)
         Coordenada coordenada = new Coordenada(1, 2);
@@ -321,7 +348,7 @@ public class MainActivity extends AppCompatActivity {
     public void boton_enviar_servidorFake(View quien) {
 
         //Se crea una medida con valor 22 y procedente del SensorOzono
-        Medida medida = crearMedida(22, "SensorOzono");
+        Medida medida = crearMedida(22, 1);
 
 
         JSONObject jsonObject = new JSONObject();
@@ -337,6 +364,48 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+
+        AndroidNetworking.post("http://192.168.1.18:8080/insertarMedida")
+                .addJSONObjectBody(jsonObject) // posting json
+                .setTag("test")
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONArray(new JSONArrayRequestListener() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        // do anything with response
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        // handle error
+                    }
+                });
+
+    } // pulsado ()
+
+
+
+    public void boton_enviar_servidor(View quien) {
+
+        //Se crea una medida con los valores de major y minor
+        Medida medida = crearMedida(datos_major, datos_minor);
+
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("id", null);
+            jsonObject.put("medida", medida.getValorMedida());
+            jsonObject.put("fecha", medida.getFechaMedida());
+            jsonObject.put("nombreSensor", medida.getNombreSensor());
+            jsonObject.put("latitud", medida.getCoordenada().getLatitud());
+            jsonObject.put("longitud", medida.getCoordenada().getLongitud());
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
 
         AndroidNetworking.post("http://192.168.1.18:8080/insertarMedida")
                 .addJSONObjectBody(jsonObject) // posting json

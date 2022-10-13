@@ -41,11 +41,12 @@
         app:layout_constraintTop_toBottomOf="@+id/botonDetenerBusquedaDispositivosBTLE" />
 
     <Button
-        android:id="@+id/btnEnviar"
+        android:id="@+id/btnEnviarFake"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="Buttonenviar"
+        android:onClick="boton_enviar_servidorFake"
+        android:text="ButtonenviarFake"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -60,7 +61,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnEnviar" />
+        app:layout_constraintTop_toBottomOf="@+id/btnEnviarFake" />
 
     <TextView
         android:id="@+id/minor_text"
@@ -71,5 +72,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/major_text" />
+
+    <Button
+        android:id="@+id/botonEnviarServ"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="boton_enviar_servidor"
+        android:text="BotonEnviarServidor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/minor_text" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
