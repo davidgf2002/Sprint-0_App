@@ -292,8 +292,8 @@ public class MainActivity extends AppCompatActivity {
         this.elBotonEnviar = (Button) findViewById(R.id.botonEnviarServ);
 
         //Textos para mostrar los datos
-        major_text = findViewById(R.id.major_text);
-        minor_text = findViewById(R.id.minor_text);
+        //major_text = findViewById(R.id.major_text);
+        //minor_text = findViewById(R.id.minor_text);
 
 
         inicializarBlueTooth();
